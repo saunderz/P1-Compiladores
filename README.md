@@ -1,2 +1,11 @@
 # P1-Compiladores
-Projeto acadêmico que implementa, passo a passo, um Tradutor Dirigido por Sintaxe em Java, evoluindo até um simples Interpretador funcional (Parte 1–8).
+
+# Parte 1 — Um simples tradutor
+
+Traduz expressões **infixadas** para **pós-fixadas** (RPN) imprimindo `push`, `add`, `sub`.
+Aceita **apenas dígitos simples** (0–9) e operadores `+` / `-`.
+
+## Como compilar e rodar
+```bash
+javac Main.java Parser.java
+java Main

@@ -1,6 +1,7 @@
 public class Token {
-    public final TokenType type;
-    public final String lexeme;
+
+    final TokenType type;
+    final String lexeme;
 
     public Token(TokenType type, String lexeme) {
         this.type = type;
@@ -11,5 +12,4 @@ public class Token {
     public String toString() {
         return "<" + type + ">" + lexeme + "</" + type + ">";
     }
-
 }

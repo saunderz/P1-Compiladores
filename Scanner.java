@@ -20,7 +20,16 @@ public class Scanner {
         }
     }
 
-    // builds NUMBER token from a run of digits
+    // ignora espacos, tabs, CR e LF
+    private void skipWhitespace() {
+        char ch = peek();
+        while (ch == ' ' || ch == '\r' || ch == '\t' || ch == '\n') {
+            advance();
+            ch = peek();
+        }
+    }
+
+    // monta NUMBER a partir de uma sequencia de digitos, interessante para possibilitar cálculo com números maiores
     private Token number() {
         int start = current;
         while (Character.isDigit(peek())) {
@@ -30,8 +39,10 @@ public class Scanner {
         return new Token(TokenType.NUMBER, n);
     }
 
-    // returns Token (type + lexeme)
+    // retorna o proximo Token  
     public Token nextToken() {
+        skipWhitespace();              
+
         char ch = peek();
 
         if (ch == '0') {
@@ -53,18 +64,5 @@ public class Scanner {
             default:
                 throw new Error("lexical error at " + ch);
         }
-    }
-
-    // quick scanner test (optional)
-    public static void main(String[] args) {
-        String input = "289-85+0+69";
-        Scanner scan = new Scanner(input.getBytes());
-        System.out.println(scan.nextToken());
-        System.out.println(scan.nextToken());
-        System.out.println(scan.nextToken());
-        System.out.println(scan.nextToken());
-        System.out.println(scan.nextToken());
-        System.out.println(scan.nextToken());
-        System.out.println(scan.nextToken());
     }
 }

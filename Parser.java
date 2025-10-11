@@ -12,18 +12,19 @@ public class Parser {
         currentToken = scan.nextToken();
     }
 
-    private void consume(TokenType t) {
+    // agora casamos por tipo, nao por lexema
+    private void match(TokenType t) {
         if (currentToken.type == t) {
             nextToken();
         } else {
-            throw new Error("syntax error: expected " + t + " got " + currentToken);
+            throw new Error("syntax error");
         }
     }
 
     public void parse() {
         expr();
         if (currentToken.type != TokenType.EOF) {
-            throw new Error("syntax error: trailing input " + currentToken);
+            throw new Error("syntax error");
         }
     }
 
@@ -33,28 +34,25 @@ public class Parser {
         oper();
     }
 
-    // number -> [0-9]+  
+    // number -> [0-9]+
     private void number() {
-        if (currentToken.type == TokenType.NUMBER) {
-            System.out.println("push " + currentToken.lexeme);
-            consume(TokenType.NUMBER);
-        } else {
-            throw new Error("syntax error: number expected, got " + currentToken);
-        }
+        System.out.println("push " + currentToken.lexeme);
+        match(TokenType.NUMBER);
     }
 
     // oper -> + number oper | - number oper | epsilon
     private void oper() {
         if (currentToken.type == TokenType.PLUS) {
-            consume(TokenType.PLUS);
+            match(TokenType.PLUS);
             number();
             System.out.println("add");
             oper();
         } else if (currentToken.type == TokenType.MINUS) {
-            consume(TokenType.MINUS);
+            match(TokenType.MINUS);
             number();
             System.out.println("sub");
             oper();
         }
+        // epsilon: nada a fazer
     }
 }

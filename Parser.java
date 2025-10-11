@@ -1,55 +1,55 @@
 public class Parser {
-    private final Lexer lexer;
-    private Token current;
+    
+    private Scanner scan;
+    private char currentToken;
 
     public Parser(byte[] input) {
-        this.lexer = new Lexer(input);
-        this.current = lexer.next();
+        scan = new Scanner(input);
+        currentToken = scan.nextToken();
     }
 
-    private void consume(TokenType t) {
-        if (current.type == t) {
-            current = lexer.next();
+    private void nextToken () {
+        currentToken = scan.nextToken();
+    }
+
+    private void match(char t) {
+        if (currentToken == t) {
+            nextToken();
         } else {
-            throw new Error("syntax error: expected " + t + " got " + current);
+            throw new Error("syntax error");
         }
     }
 
-    public void parse() {
-        expr();
-        if (current.type != TokenType.EOF) {
-            throw new Error("syntax error: trailing input " + current);
-        }
-    }
-
-    private void expr() {
-        number();
+    void expr() {
+        digit();
         oper();
     }
 
-    // number -> [0-9]+ 
-    private void number() {
-        if (current.type == TokenType.NUMBER) {
-            System.out.println("push " + current.lexeme);
-            consume(TokenType.NUMBER);
+    void digit () {
+        if (Character.isDigit(currentToken)) {
+            System.out.println("push " + currentToken);
+            match(currentToken);
         } else {
-            throw new Error("syntax error: number expected, got " + current);
+            throw new Error("syntax error");
         }
     }
 
-    private void oper() {
-        if (current.type == TokenType.PLUS) {
-            consume(TokenType.PLUS);
-            number();
+    void oper () {
+        if (currentToken == '+') {
+            match('+');
+            digit();
             System.out.println("add");
             oper();
-        } else if (current.type == TokenType.MINUS) {
-            consume(TokenType.MINUS);
-            number();
+        } else if (currentToken == '-') {
+            match('-');
+            digit();
             System.out.println("sub");
             oper();
-        } else {
-            // nada a fazer
         }
+        // ε: nada a fazer
+    }
+
+    public void parse () {
+        expr();
     }
 }

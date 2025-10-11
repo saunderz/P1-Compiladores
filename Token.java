@@ -9,6 +9,7 @@ public class Token {
 
     @Override
     public String toString() {
-        return type + "('" + lexeme + "')";
+        return "<" + type + ">" + lexeme + "</" + type + ">";
     }
+
 }

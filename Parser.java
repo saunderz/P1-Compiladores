@@ -20,12 +20,38 @@ public class Parser {
         }
     }
 
+    // sentential symbol: program -> statements
     public void parse() {
-        // entrypoint for part 6: let statement
-        letStatement();
+        statements();
         if (currentToken.type != TokenType.EOF) {
             throw new Error("syntax error");
         }
+    }
+
+    // statements -> statement*
+    private void statements() {
+        while (currentToken.type != TokenType.EOF) {
+            statement();
+        }
+    }
+
+    // statement -> printStatement | letStatement
+    private void statement() {
+        if (currentToken.type == TokenType.PRINT) {
+            printStatement();
+        } else if (currentToken.type == TokenType.LET) {
+            letStatement();
+        } else {
+            throw new Error("syntax error");
+        }
+    }
+
+    // printStatement -> 'print' expr ';'
+    private void printStatement () {
+        match(TokenType.PRINT);
+        expr();
+        System.out.println("print");
+        match(TokenType.SEMICOLON);
     }
 
     // letStatement -> 'let' IDENT '=' expr ';'
@@ -35,7 +61,7 @@ public class Parser {
         match(TokenType.IDENT);
         match(TokenType.EQ);
         expr();
-        System.out.println("pop " + id);   // translation: assignment
+        System.out.println("pop " + id);   // translation for assignment
         match(TokenType.SEMICOLON);
     }
 

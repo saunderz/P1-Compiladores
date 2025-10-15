@@ -10,6 +10,7 @@ public enum TokenType {
 
     // Keywords
     LET,
+    PRINT,
 
     EOF
 }

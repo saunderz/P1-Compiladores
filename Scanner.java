@@ -7,7 +7,8 @@ public class Scanner {
     private static final Map<String, TokenType> keywords;
     static {
         keywords = new HashMap<>();
-        keywords.put("let", TokenType.LET);
+        keywords.put("let",   TokenType.LET);
+        keywords.put("print", TokenType.PRINT);
     }
 
     private byte[] input;

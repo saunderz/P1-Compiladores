@@ -1,15 +1,15 @@
-# P1-Compiladores — Partes 1 a 4
+# P1-Compiladores — Partes 1 a 8
 
-Projeto didático de **Tradução Dirigida por Sintaxe (SDT)** que evolui, passo a passo, de um tradutor simples para um pipeline com **scanner** e **tokens tipados**.  
-Nesta fase **não foi usado Maven** nem `package` compilou-se com `javac` direto.
+Projeto didático de **Tradução Dirigida por Sintaxe (SDT)** que evolui, passo a passo, de um tradutor simples para um **interpretador** funcional.  
+Até a Parte 8, não foi usado Maven nem `package` — compilação direta com `javac`.
 
 ---
 
 ## ✅ Requisitos
-- **Java JDK 17+** no PATH
+- **Java JDK 17+** no `PATH`
 - (Opcional) **Git** para versionamento
 
-Verifique no terminal:
+Verifique:
 ```bash
 java -version
 javac -version
@@ -17,23 +17,34 @@ javac -version
 
 ---
 
-## 📦 Arquivos no repositório (até a Parte 4)
+## 🚀 Execução rápida (estado final — Parte 8)
+
+Dentro do diretório do projeto:
+```bash
+javac -encoding UTF-8 TokenType.java Token.java Scanner.java Parser.java Interpretador.java Main.java
+java Main
+```
+
+---
+
+## 📦 Estrutura do repositório (final)
 ```
 P1-Compiladores/
 ├─ Main.java
 ├─ Parser.java
-├─ Scanner.java        # Parte 3 e 4
-├─ Token.java         # Parte 2 e 4
-├─ TokenType.java     # Parte 2 e 4
-└─ (opcional) Lexer.java  # Parte 2
+├─ Scanner.java
+├─ Token.java
+├─ TokenType.java
+└─ Interpretador.java
 ```
+> Se mantiver arquivos das partes anteriores, compile apenas os necessários de cada parte.
+
 ---
 
-# 🧩 Parte 1 — Um simples tradutor (sem analisador léxico)
-Traduz expressões infixadas com **dígitos únicos (0–9)** e operadores `+` / `-` para ações:
-- `push <dígito>`, `add`, `sub`.
+## 🧩 Parte 1 — Um simples tradutor (sem analisador léxico)
+Traduz expressões infixadas com dígitos únicos (0–9) e `+`/`-` para ações: `push <dígito>`, `add`, `sub`.
 
-### Gramática (Parte 1)
+**Gramática**
 ```
 expr  -> digit oper
 oper  -> + digit oper
@@ -42,13 +53,16 @@ oper  -> + digit oper
 digit -> 0 | … | 9
 ```
 
-### Como compilar e executar (Parte 1)
+**Como rodar**
 ```bash
 javac Main.java Parser.java
 java Main
 ```
-**Saída esperada** para `"8+5-7+9"`:
+
+**Exemplo** (entrada → saída)
 ```
+Entrada: 8+5-7+9
+Saída:
 push 8
 push 5
 add
@@ -57,21 +71,14 @@ sub
 push 9
 add
 ```
-**Limitações:** apenas **um dígito** por número e apenas `+`/`-`.  
-**Sem** analisador léxico — o `Parser` lê caractere a caractere.
 
 ---
 
-# 🔎 Parte 2 — Analisador léxico 
-Introduzimos um **lexer** (scanner) que transforma a entrada em **tokens**:
-- `NUMBER` para **[0-9]+** (um ou mais dígitos),
-- `PLUS`, `MINUS`,
-- `EOF`.
+## 🔎 Parte 2 — Analisador léxico (números com vários dígitos)
+Introduz lexer com tokens: `NUMBER`, `PLUS`, `MINUS`, `EOF`.  
+Parser passa a consumir tokens e mantém ações (`push`/`add`/`sub`).
 
-O `Parser` passa a consumir **tokens** do lexer e mantém as ações de tradução para RPN:
-- `push <n>`, `add`, `sub`.
-
-### Gramática (Parte 2)
+**Gramática**
 ```
 expr   -> number oper
 oper   -> + number oper
@@ -80,16 +87,13 @@ oper   -> + number oper
 number -> [0-9]+
 ```
 
-### Como compilar e executar (Parte 2)
+**Como rodar**
 ```bash
 javac TokenType.java Token.java Lexer.java Parser.java Main.java
 java Main
 ```
-**Exemplo:** em `Main.java`:
-```java
-String input = "45+89-876";
-```
-**Saída esperada:**
+
+**Exemplo** ("45+89-876")
 ```
 push 45
 push 89
@@ -100,42 +104,29 @@ sub
 
 ---
 
-# 🧱 Parte 3 — Refatoração: extraindo o analisador léxico
-Agora extrai-se a leitura de caracteres do `Parser` e a delega-se para um **`Scanner`** simples. Nesta etapa **cada caractere ainda é tratado como token** (apenas refatoração).
+## 🧱 Parte 3 — Refatoração: extraindo o analisador léxico
+Move leitura de caracteres do `Parser` para um `Scanner` ad hoc (cada char ainda é um “token”).  
+`Parser` não tem mais `peek()` e consome de `Scanner`.
 
-- `Scanner` fornece `nextToken()` (do tipo `char`).
-- `Parser` mantém a mesma gramática da Parte 1, mas **não** tem mais `peek()` próprio.  
-- `Main` permanece igual, apenas usando `Parser` com `byte[]` de entrada.
-
-### Como compilar e executar (Parte 3)
+**Como rodar**
 ```bash
 javac Scanner.java Parser.java Main.java
 java Main
 ```
-**Saída** continua a mesma da Parte 1 para `"8+5-7+9"`.
-
-> Dica: Se você ainda tiver os arquivos da Parte 2, **não os inclua** no comando `javac` desta parte.
 
 ---
 
-# 🧾 Parte 4 — Suportando token `NUMBER`
-Evoluímos o `Scanner` para **agrupar dígitos** e **classificar tokens** com **tipo + lexema** (`Token` + `TokenType`).  
-O `Parser` agora consome `Token` (não mais `char`) e imprime as mesmas ações de tradução.
+## 🧾 Parte 4 — Suportando token NUMBER
+`Scanner` passa a agrupar dígitos e retorna `Token` tipado (`NUMBER`/`PLUS`/`MINUS`/`EOF`).  
+`Parser` consome `Token` e imprime ações.
 
-- `Scanner.nextToken()` retorna `Token`:
-  - `NUMBER("289")`, `PLUS("+")`, `MINUS("-")`, `EOF("EOF")`.
-- `Parser` usa `consume(TokenType)` e imprime `push <lexema>` para números.
-
-### Como compilar e executar (Parte 4) — estado atual recomendado
+**Como rodar**
 ```bash
 javac -encoding UTF-8 TokenType.java Token.java Scanner.java Parser.java Main.java
 java Main
 ```
-**Exemplo:** em `Main.java`:
-```java
-String input = "289-85+0+69";
-```
-**Saída esperada:**
+
+**Exemplo** ("289-85+0+69")
 ```
 push 289
 push 85
@@ -148,18 +139,157 @@ add
 
 ---
 
-## 🧠 O que cada arquivo faz (resumo)
-- **Main.java**: ponto de entrada; define a string de entrada e chama `Parser.parse()`.
-- **Parser.java**:
-  - Parte 1: lê chars (sem scanner).
-  - Parte 2: consome tokens do `Lexer`.
-  - Parte 3: consome `char` de um `Scanner` adhoc.
-  - Parte 4: consome `Token` (tipo + lexema) de `Scanner`.
-- **Scanner.java**:
-  - Parte 3: fornece tokens como `char`.
-  - Parte 4: fornece `Token` tipado (`NUMBER`, `PLUS`, `MINUS`, `EOF`).
-- **Token.java / TokenType.java**: representação dos tokens (tipo + lexema).
-- **Lexer.java** (opcional / Parte 2): implementação alternativa de scanner (se usada nessa etapa).
+## 🔢 Parte 5 — Parser por number, com espaços em branco
+Atualiza gramática do parser para `number` e o `Scanner` passa a ignorar whitespace.
+
+**Gramática**
+```
+expr   -> number oper
+oper   -> + number oper
+       |  - number oper
+       |  ε
+number -> [0-9]+
+```
+
+**Exemplo** ("45 + 89 - 876")
+```
+push 45
+push 89
+add
+push 876
+sub
+```
 
 ---
+
+## 🔤 Parte 6 — Variáveis, `let`, `=` e `;`
+Suporte a identificadores e palavra-chave `let`, mais símbolos `=` e `;`.  
+Parser aceita termos como **número** ou **identificador**.
+
+**Gramática**
+```
+letStatement -> 'let' identifier '=' expr ';'
+expr         -> term oper
+oper         -> + term oper
+             | - term oper
+             |  ε
+term         -> number | identifier
+number       -> [0-9]+
+```
+
+**Exemplos**
+```
+Entrada: let a = 42 + 5 - 8;
+Saída:
+push 42
+push 5
+add
+push 8
+sub
+pop a
+```
+```
+Entrada: let a = 45 + preco - 876;
+Saída:
+push 45
+push preco
+add
+push 876
+sub
+pop a
+```
+
+---
+
+## 🖨️ Parte 7 — Comando `print` e múltiplos statements
+Palavra-chave `print`; o programa agora é uma sequência de statements:
+```
+statement  -> printStatement | letStatement
+printStmt  -> 'print' expr ';'
+statements -> statement*
+```
+
+**Exemplo**
+```
+let a = 42 + 5 - 8;
+let b = 56 + 8;
+print a + b + 6;
+```
+**Saída**
+```
+push 42
+push 5
+add
+push 8
+sub
+pop a
+push 56
+push 8
+add
+pop b
+push a
+push b
+add
+push 6
+add
+print
+```
+
+---
+
+## 🧠 Parte 8 — Um simples interpretador (stack machine)
+O `Parser` deixa de imprimir e passa a **gerar código** (via `emit` para um `StringBuilder`).  
+O `Interpretador` lê esse código linha a linha e executa em uma pilha com variáveis.
+
+**Instruções suportadas**
+- `PUSH <n|id>` — empilha número literal ou valor da variável  
+- `ADD` / `SUB` — opera topo da pilha  
+- `POP <id>` — armazena topo da pilha em variável  
+- `PRINT` — imprime topo da pilha
+
+**Como rodar (final)**
+```bash
+javac -encoding UTF-8 TokenType.java Token.java Scanner.java Parser.java Interpretador.java Main.java
+java Main
+```
+
+**Exemplo final**
+```
+let a = 42 + 2;
+let b = 15 + 3;
+print a + b;
+```
+**Saída**
+```
+62
+```
+
+---
+
+## 🗂️ Resumo por arquivo (final)
+- **Scanner.java**: léxico ad hoc; ignora espaços; reconhece `NUMBER`, `IDENT`, `LET`, `PRINT`, `+`, `-`, `=`, `;`, `EOF`.
+- **Token.java / TokenType.java**: representação dos tokens (tipo + lexema).
+- **Parser.java**: descida recursiva; gera código com `emit(...)`; expõe `output()`; reconhece `statements`, `let`, `print`, `expr`.
+- **Interpretador.java**: executa a sequência de instruções geradas pelo `Parser` (pilha + mapa de variáveis).
+- **Main.java**: ponto de entrada; alimenta `Parser` com a string do programa, passa a saída ao `Interpretador` e executa.
+
+---
+
+## 🧪 Testes rápidos
+Troque a string de input em `Main.java` por qualquer programa válido, compile e rode.  
+Exemplo “modo direto” (sem parser), útil para validar o interpretador:
+```
+push 10
+push 20
+add
+pop a
+push 45
+push a
+sub
+print
+```
+**Saída**
+```
+35
+```
 
